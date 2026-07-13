@@ -25,19 +25,34 @@ jobs:
         uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          claude_args: '--allowed-tools "Bash(gh issue view:*),Bash(gh issue edit:*),Bash(gh label list:*)"'
+          claude_args: '--allowed-tools "Bash(gh issue view:*),Bash(gh issue edit:*),Bash(gh label list:*),Bash(gh issue comment:*)"'
           prompt: |
             You are triaging GitHub issue #${{ github.event.issue.number }} in
-            ${{ github.repository }}.
+            ${{ github.repository }}. The repository is checked out in the current
+            working directory — read its files to ground your analysis.
 
-            1. Read the issue with: gh issue view ${{ github.event.issue.number }}
-            2. List the repository's available labels with: gh label list
-            3. Assess the underlying problem and decide which of the EXISTING labels
-               best describe it (e.g. bug vs. enhancement vs. documentation vs. question).
-               You may assign more than one when justified.
-            4. Re-sync the issue's labels so they exactly match your assessment:
+            ## Step 1 — Labels
+            1. Read the issue: gh issue view ${{ github.event.issue.number }}
+            2. List available labels: gh label list
+            3. Decide which EXISTING labels best describe the issue (bug / enhancement /
+               documentation / question / etc.). Assign more than one when justified.
+            4. Re-sync labels to match your assessment:
                gh issue edit ${{ github.event.issue.number }} --add-label "<label>" [--remove-label "<label>"]
-               Only use labels that already exist — never create new labels.
-            5. If the current labels are already correct, make no change.
+               Only use labels that already exist — never create new labels. No change if
+               the current labels are already correct.
 
-            Keep it fast and quiet: do not post comments, only adjust labels.
+            ## Step 2 — Diagnostic comment
+            Investigate the codebase (game.js, index.html, style.css, CLAUDE.md) and write
+            a concise diagnostic to help a follow-up @claude run fix the issue. Include:
+              - Likely root cause / the behavior at fault
+              - Specific files and functions involved (e.g. game.js:clearLines)
+              - A suggested fix approach
+            Begin the comment body with the exact hidden marker line:
+              <!-- claude-triage-diagnostic -->
+            Before posting, run `gh issue view ${{ github.event.issue.number }} --comments`
+            and check whether a comment containing that marker already exists.
+              - If it does, update it in place:
+                gh issue comment ${{ github.event.issue.number }} --edit-last --body "<updated diagnostic>"
+              - Otherwise post a new one:
+                gh issue comment ${{ github.event.issue.number }} --body "<diagnostic>"
+            Do not post more than one diagnostic comment per issue.
