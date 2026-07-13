@@ -1,0 +1,43 @@
+name: Claude Issue Triage
+
+on:
+  issues:
+    types: [opened, edited]
+
+concurrency:
+  group: claude-triage-${{ github.event.issue.number }}
+  cancel-in-progress: true
+
+jobs:
+  triage:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+      id-token: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Triage issue with Claude
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          claude_args: '--allowed-tools "Bash(gh issue view:*),Bash(gh issue edit:*),Bash(gh label list:*)"'
+          prompt: |
+            You are triaging GitHub issue #${{ github.event.issue.number }} in
+            ${{ github.repository }}.
+
+            1. Read the issue with: gh issue view ${{ github.event.issue.number }}
+            2. List the repository's available labels with: gh label list
+            3. Assess the underlying problem and decide which of the EXISTING labels
+               best describe it (e.g. bug vs. enhancement vs. documentation vs. question).
+               You may assign more than one when justified.
+            4. Re-sync the issue's labels so they exactly match your assessment:
+               gh issue edit ${{ github.event.issue.number }} --add-label "<label>" [--remove-label "<label>"]
+               Only use labels that already exist — never create new labels.
+            5. If the current labels are already correct, make no change.
+
+            Keep it fast and quiet: do not post comments, only adjust labels.
