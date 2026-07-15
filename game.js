@@ -27,12 +27,16 @@ const PIECES = [
 ];
 
 const LINE_SCORES = [0, 100, 300, 500, 800];
+const PERFECT_CLEAR_BONUS = 3000;
 
 const canvas = document.getElementById('board');
 const ctx = canvas.getContext('2d');
 const nextCanvas = document.getElementById('next-canvas');
 const nextCtx = nextCanvas.getContext('2d');
+const holdCanvas = document.getElementById('hold-canvas');
+const holdCtx = holdCanvas.getContext('2d');
 const scoreEl = document.getElementById('score');
+const comboEl = document.getElementById('combo');
 const linesEl = document.getElementById('lines');
 const levelEl = document.getElementById('level');
 const overlay = document.getElementById('overlay');
@@ -42,6 +46,8 @@ const restartBtn = document.getElementById('restart-btn');
 const themeToggleBtn = document.getElementById('theme-toggle');
 
 let board, current, next, score, lines, level, paused, gameOver, lastTime, dropAccum, dropInterval, animId;
+let combo, b2bTetris;
+let hold, canHold;
 let gridColor = '#22222e';
 
 const THEME_KEY = 'tetris-theme';
@@ -62,10 +68,13 @@ function createBoard() {
   return Array.from({ length: ROWS }, () => new Array(COLS).fill(0));
 }
 
-function randomPiece() {
-  const type = Math.floor(Math.random() * 7) + 1;
+function pieceFromType(type) {
   const shape = PIECES[type].map(row => [...row]);
   return { type, shape, x: Math.floor(COLS / 2) - Math.floor(shape[0].length / 2), y: 0 };
+}
+
+function randomPiece() {
+  return pieceFromType(Math.floor(Math.random() * 7) + 1);
 }
 
 function collide(shape, ox, oy) {
@@ -120,12 +129,24 @@ function clearLines() {
     }
   }
   if (cleared) {
+    combo = Math.min(combo + 1, 10);
+    let base = LINE_SCORES[cleared] || 0;
+    if (cleared === 4 && b2bTetris) base *= 2;
+    score += base * level * combo;
+    b2bTetris = cleared === 4;
+
+    if (board.every(row => row.every(v => v === 0))) {
+      score += PERFECT_CLEAR_BONUS * level;
+    }
+
     lines += cleared;
-    score += (LINE_SCORES[cleared] || 0) * level;
     level = Math.floor(lines / 10) + 1;
     dropInterval = Math.max(100, 1000 - (level - 1) * 90);
-    updateHUD();
+  } else {
+    combo = 0;
+    b2bTetris = false;
   }
+  updateHUD();
 }
 
 function ghostY() {
@@ -155,6 +176,7 @@ function lockPiece() {
   merge();
   clearLines();
   spawn();
+  canHold = true;
 }
 
 function spawn() {
@@ -166,10 +188,38 @@ function spawn() {
   drawNext();
 }
 
+function holdPiece() {
+  if (!canHold) return;
+  if (hold === null) {
+    hold = current.type;
+    spawn();
+  } else {
+    const swap = current.type;
+    current = pieceFromType(hold);
+    hold = swap;
+    if (collide(current.shape, current.x, current.y)) {
+      endGame();
+    }
+  }
+  canHold = false;
+  drawHold();
+}
+
 function updateHUD() {
   scoreEl.textContent = score.toLocaleString();
   linesEl.textContent = lines;
   levelEl.textContent = level;
+  updateCombo();
+}
+
+function updateCombo() {
+  if (combo >= 2) {
+    comboEl.textContent = `x${combo}`;
+    comboEl.style.fontSize = `${12 + combo * 3}px`;
+    comboEl.classList.remove('hidden');
+  } else {
+    comboEl.classList.add('hidden');
+  }
 }
 
 function drawBlock(context, x, y, colorIndex, size, alpha) {
@@ -234,6 +284,19 @@ function drawNext() {
       drawBlock(nextCtx, offX + c, offY + r, shape[r][c], NB);
 }
 
+function drawHold() {
+  const HB = 30;
+  holdCtx.clearRect(0, 0, holdCanvas.width, holdCanvas.height);
+  if (hold === null) return;
+  const shape = PIECES[hold];
+  const offX = Math.floor((4 - shape[0].length) / 2);
+  const offY = Math.floor((4 - shape.length) / 2);
+  const alpha = canHold ? 1 : 0.35;
+  for (let r = 0; r < shape.length; r++)
+    for (let c = 0; c < shape[r].length; c++)
+      drawBlock(holdCtx, offX + c, offY + r, shape[r][c], HB, alpha);
+}
+
 function endGame() {
   gameOver = true;
   cancelAnimationFrame(animId);
@@ -278,6 +341,10 @@ function init() {
   score = 0;
   lines = 0;
   level = 1;
+  combo = 0;
+  b2bTetris = false;
+  hold = null;
+  canHold = true;
   paused = false;
   gameOver = false;
   dropInterval = 1000;
@@ -287,6 +354,7 @@ function init() {
   spawn();
   updateHUD();
   overlay.classList.add('hidden');
+  drawHold();
   cancelAnimationFrame(animId);
   animId = requestAnimationFrame(loop);
 }
@@ -311,6 +379,11 @@ document.addEventListener('keydown', e => {
     case 'Space':
       e.preventDefault();
       hardDrop();
+      break;
+    case 'KeyC':
+    case 'ShiftLeft':
+    case 'ShiftRight':
+      holdPiece();
       break;
   }
   updateHUD();
