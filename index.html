@@ -19,6 +19,18 @@
           <span class="label">HOLD</span>
           <canvas id="hold-canvas" width="120" height="120"></canvas>
         </div>
+
+        <div class="panel-section highscores-section">
+          <span class="label">HIGH SCORES</span>
+          <table class="highscores-table">
+            <tbody id="highscores-body"></tbody>
+          </table>
+          <div class="best-stats">
+            <span>Mejor combo: <span id="best-combo">0</span></span>
+            <span>Máx. líneas: <span id="best-lines">0</span></span>
+          </div>
+          <button id="reset-scores-btn" type="button">Reset records</button>
+        </div>
       </aside>
 
       <canvas id="board" width="300" height="600"></canvas>
@@ -62,6 +74,26 @@
         <div class="overlay-box">
           <p id="overlay-title">GAME OVER</p>
           <p id="overlay-score"></p>
+
+          <div id="overlay-endgame-extra" class="overlay-endgame-extra hidden">
+            <div id="highscore-entry" class="highscore-entry hidden">
+              <label for="highscore-name">¡Nuevo récord! Ingresa tu nombre:</label>
+              <input type="text" id="highscore-name" maxlength="10" autocomplete="off" />
+              <button id="highscore-submit-btn" type="button">Guardar</button>
+            </div>
+
+            <div class="overlay-highscores">
+              <span class="label">HIGH SCORES</span>
+              <table class="highscores-table">
+                <tbody id="overlay-highscores-body"></tbody>
+              </table>
+              <div class="best-stats">
+                <span>Mejor combo: <span id="overlay-best-combo">0</span></span>
+                <span>Máx. líneas: <span id="overlay-best-lines">0</span></span>
+              </div>
+            </div>
+          </div>
+
           <button id="restart-btn">Reiniciar</button>
         </div>
       </div>

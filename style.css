@@ -24,6 +24,7 @@
   --restart-color: #0f0f17;
   --restart-hover-bg: #9bbdff;
   --combo-color: #ffb74d;
+  --highscore-highlight-bg: rgba(122, 162, 247, 0.25);
 }
 
 :root[data-theme="light"] {
@@ -46,6 +47,7 @@
   --restart-color: #ffffff;
   --restart-hover-bg: #5c7ce0;
   --combo-color: #e8830a;
+  --highscore-highlight-bg: rgba(59, 91, 219, 0.15);
 }
 
 body {
@@ -255,4 +257,131 @@ kbd {
 
 #restart-btn:hover {
   background: var(--restart-hover-bg);
+}
+
+/* ---- High scores ---- */
+.highscores-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 11px;
+}
+
+.highscores-table td {
+  padding: 2px 4px;
+}
+
+.highscores-table td:first-child {
+  color: var(--label-color);
+  width: 18px;
+}
+
+.highscores-table td:nth-child(2) {
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 60px;
+}
+
+.highscores-table td:last-child {
+  text-align: right;
+  color: var(--value-color);
+}
+
+.highscore-empty {
+  color: var(--label-color);
+  text-align: center;
+  font-style: italic;
+}
+
+.highscore-highlight {
+  background: var(--highscore-highlight-bg);
+  border-radius: 3px;
+}
+
+.best-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 11px;
+  color: var(--controls-color);
+}
+
+#reset-scores-btn {
+  margin-top: 4px;
+  background: transparent;
+  border: 1px solid var(--board-border);
+  color: var(--controls-color);
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-size: 10px;
+  cursor: pointer;
+  letter-spacing: 0.5px;
+  transition: background 0.15s;
+}
+
+#reset-scores-btn:hover {
+  background: var(--kbd-bg);
+}
+
+.overlay-endgame-extra {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 200px;
+}
+
+.overlay-endgame-extra.hidden {
+  display: none;
+}
+
+.highscore-entry {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.highscore-entry.hidden {
+  display: none;
+}
+
+.highscore-entry label {
+  font-size: 11px;
+  color: var(--overlay-score-color);
+}
+
+#highscore-name {
+  background: var(--kbd-bg);
+  border: 1px solid var(--kbd-border);
+  border-radius: 4px;
+  padding: 6px 8px;
+  color: var(--text);
+  font-size: 13px;
+  text-align: center;
+  font-family: inherit;
+}
+
+#highscore-submit-btn {
+  background: var(--restart-bg);
+  color: var(--restart-color);
+  border: none;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  letter-spacing: 0.5px;
+  transition: background 0.15s;
+}
+
+#highscore-submit-btn:hover {
+  background: var(--restart-hover-bg);
+}
+
+.overlay-highscores {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  text-align: left;
 }
