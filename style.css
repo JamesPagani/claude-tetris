@@ -101,6 +101,24 @@ body {
   transform: scale(1.08);
 }
 
+.skin-select {
+  height: 36px;
+  padding: 0 10px;
+  background: var(--kbd-bg);
+  border: 1px solid var(--board-border);
+  border-radius: 18px;
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.15s;
+}
+
+.skin-select:hover {
+  transform: scale(1.04);
+}
+
 .game-container {
   position: relative;
   display: flex;
